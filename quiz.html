@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Викторинка</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    /* Стили для викторины */
+    .quiz-title {
+      text-align: center;
+      color: #e74c3c;
+      font-size: 2.5em;
+      margin-top: 60px;
+      text-shadow: 1px 1px 3px rgba(0,0,0,0.3);
+    }
+    .quiz-description {
+      text-align: center;
+      color: #333;
+      font-size: 1.2em;
+      margin: 20px auto;
+      max-width: 600px;
+    }
+    .quiz-container {
+      max-width: 600px;
+      margin: 20px auto;
+      background: #fff;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+    .question {
+      font-size: 1.5em;
+      margin-bottom: 20px;
+      color: #333;
+    }
+    .options button {
+      display: block;
+      width: 100%;
+      margin: 10px 0;
+      padding: 10px;
+      font-size: 1.2em;
+      cursor: pointer;
+      border: none;
+      border-radius: 5px;
+      background: #e74c3c;
+      color: #fff;
+      transition: background 0.3s;
+    }
+    .options button:hover {
+      background: #c0392b;
+    }
+    .score {
+      text-align: center;
+      font-size: 1.5em;
+      margin-top: 20px;
+      color: #fff;
+    }
+    /* Модальное окно результатов */
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.8);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+    }
+    .modal.active {
+      display: flex;
+    }
+    .modal-content {
+      background: #fff;
+      padding: 30px;
+      border-radius: 10px;
+      text-align: center;
+      position: relative;
+      max-width: 90%;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    }
+    .close-modal {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      font-size: 1.5em;
+      cursor: pointer;
+      color: #aaa;
+    }
+    .modal-content img {
+  display: block;
+  margin: 0 auto 20px; /* 20px – отступ снизу, можно менять по необходимости */
+  width: 300px;
+  height: 200px;
+  object-fit: cover;
+}
+
+    /* Стили для бесконечного слайдера */
+    .infinite-slider {
+      max-width: 600px;
+      margin: 20px auto;
+      overflow: hidden;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      position: relative;
+    }
+    .infinite-slider img {
+      width: 100%;
+      height: 400px;
+      object-fit: cover;
+      transition: opacity 0.5s ease-in-out;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <a href="index.html">Главная</a>
+    <a href="game.html">Игрушка</a>
+    <a href="quiz.html">Викторинка</a>
+    <a href="animation1.html">Приколюха 1</a>
+    <a href="animation2.html">Приколюха 2</a>
+    <a href="love.html">Главный вопрос вечера</a>
+  </header>
+  
+  <!-- Заголовок и описание викторины -->
+  <h2 class="quiz-title">Викторинка</h2>
+  <p class="quiz-description">Пройди викторику, в которой будут вопросы про нас или про меня)))</p>
+  
+  <div class="content-container">
+    <div class="quiz-container" id="quizContainer">
+      <!-- Содержимое викторины загружается динамически -->
+    </div>
+    <div class="score" id="score"></div>
+  </div>
+  
+  <!-- Модальное окно с результатом викторины -->
+  <div class="modal" id="resultModal">
+    <div class="modal-content">
+      <span class="close-modal" id="closeModal" style="display:none;"></span>
+      <h2 id="resultTitle"></h2>
+      <p id="resultText"></p>
+      <img id="resultImage" src="" alt="Результат">
+      <button class="button" id="nextButton">Далее</button>
+    </div>
+  </div>
+  
+  <script>
+    // Массив вопросов – пример заполнения (отредактируйте под себя)
+    const questions = [
+      {
+        question: "Вопрос 1: Сколько сообщений у нас в переписке в тг?",
+        options: ["350 тыс.", "430 тыс.", "500 тыс.", "700 тыс."],
+        correct: 1,
+        correctImage: "images/correct1.jpg",
+        incorrectImage: "images/incorrect1.jpg"
+      },
+      {
+        question: "Вопрос 2: Как я чаще всего тебя называю в переписке?",
+        options: ["Любимая", "Зайка", "Малыш", "Золото"],
+        correct: 0,
+        correctImage: "images/correct2.jpg",
+        incorrectImage: "images/incorrect2.jpg"
+      },
+      {
+        question: "Вопрос 3: Где мы впервые поцеловались?",
+        options: ["В школе", "В маке", "В кино", "На остановке"],
+        correct: 3,
+        correctImage: "images/correct3.jpg",
+        incorrectImage: "images/incorrect3.jpg"
+      },
+      {
+        question: "Вопрос 4: Что из этого я никогда не заказывал в кафе?",
+        options: ["Латте", "Зеленый чай", "Лимонад", "Капучино"],
+        correct: 3,
+        correctImage: "images/correct4.jpg",
+        incorrectImage: "images/incorrect4.jpg"
+      },
+      {
+        question: "Вопрос 5: Когда началась наша переписка?",
+        options: ["27.10.2021", "18.07.2021", "16.09.2021", "01.12.2021"],
+        correct: 0,
+        correctImage: "images/correct5.jpg",
+        incorrectImage: "images/incorrect5.jpg"
+      },
+      {
+        question: "Вопрос 6: Если бы мы могли телепортироваться прямо сейчас, куда бы я захотел поехать?",
+        options: ["В Париж – город любви", "В Японию – посмотреть на сакуру", "В Сан-Франциско – насладиться Голден Гейтом", "В Рио – на карнавал"],
+        correct: 2,
+        correctImage: "images/correct6.jpg",
+        incorrectImage: "images/incorrect6.jpg"
+      },
+      {
+        question: "Вопрос 7: Какое мое любимое блюдо, которое ты готовишь?",
+        options: ["Твой фирменный салат", "Пюре со стейком", "Гречка с котлетками", "Карбонара"],
+        correct: 1,
+        correctImage: "images/correct7.jpg",
+        incorrectImage: "images/incorrect7.jpg"
+      },
+      {
+        question: "Вопрос 8: Какой у меня любимый вид спорта (кроме футбола)?",
+        options: ["Хоккей", "Баскетбол", "Теннис", "Формула-1"],
+        correct: 1,
+        correctImage: "images/correct8.jpg",
+        incorrectImage: "images/incorrect8.jpg"
+      },
+      {
+        question: "Вопрос 9: Какая моя любимая книга?",
+        options: ["Гранатовый браслет", "Война и мир", "Маленький принц", "Мастер и Маргарита"],
+        correct: 0,
+        correctImage: "images/correct9.jpg",
+        incorrectImage: "images/incorrect9.jpg"
+      },
+      {
+        question: "Вопрос 10: Понравился тест?",
+        options: ["ДА!!!!!", "Нет((("],
+        correct: 0,
+        correctImage: "images/correct10.jpg",
+        incorrectImage: "images/incorrect10.jpg"
+      }
+    ];
+    
+    let currentQuestion = 0;
+    let score = 0;
+    const quizContainer = document.getElementById('quizContainer');
+    const resultModal = document.getElementById('resultModal');
+    const resultTitle = document.getElementById('resultTitle');
+    const resultText = document.getElementById('resultText');
+    const resultImage = document.getElementById('resultImage');
+    const nextButton = document.getElementById('nextButton');
+    const scoreDiv = document.getElementById('score');
+    
+    function showQuestion() {
+      if (currentQuestion < questions.length) {
+        const q = questions[currentQuestion];
+        let html = `<div class="question">${q.question}</div><div class="options">`;
+        q.options.forEach((option, index) => {
+          html += `<button onclick="checkAnswer(${index})">${option}</button>`;
+        });
+        html += `</div>`;
+        quizContainer.innerHTML = html;
+      } else {
+        // Если вопросы закончились, показываем бесконечный слайдер
+        quizContainer.innerHTML = getInfiniteSliderHTML();
+        scoreDiv.textContent = `Твой результат: ${score} из ${questions.length}`;
+        initInfiniteSlider();
+      }
+    }
+    
+    function checkAnswer(selected) {
+      const q = questions[currentQuestion];
+      let isCorrect = (selected === q.correct);
+      if (isCorrect) {
+        score++;
+        resultTitle.textContent = "Правильно!✅";
+        resultText.textContent = "Умничка❤️, я в тебе не сомневался😎";
+        resultImage.src = q.correctImage;
+      } else {
+        resultTitle.textContent = "Неправильно!❌";
+        resultText.textContent = "Ну ты блин вообще капец 😢";
+        resultImage.src = q.incorrectImage;
+      }
+      resultModal.classList.add('active');
+    }
+    
+    nextButton.addEventListener('click', () => {
+      resultModal.classList.remove('active');
+      currentQuestion++;
+      showQuestion();
+    });
+    
+    showQuestion();
+    
+    // Функция для генерации HTML для бесконечного слайдера
+    function getInfiniteSliderHTML() {
+      return `
+        <div class="infinite-slider">
+          <img id="sliderImage" src="" alt="Слайдер">
+        </div>
+      `;
+    }
+    
+    // Массив имён файлов для слайдера (отредактируйте список под свои файлы)
+    const sliderImages = [
+      "images/correct1.jpg",
+      "images/correct2.jpg",
+      "images/correct3.jpg",
+      "images/correct4.jpg",
+      "images/correct5.jpg",
+      "images/correct6.jpg",
+      "images/correct7.jpg",
+      "images/correct8.jpg",
+      "images/correct9.jpg",
+      "images/correct10.jpg",
+      "images/incorrect1.jpg",
+      "images/incorrect2.jpg",
+      "images/incorrect3.jpg",
+      "images/incorrect4.jpg",
+      "images/incorrect5.jpg",
+      "images/incorrect6.jpg",
+      "images/incorrect7.jpg",
+      "images/incorrect8.jpg",
+      "images/incorrect9.jpg",
+      "images/incorrect10.jpg",
+      "images/1.jpg",
+      "images/2.jpg",
+      "images/3.jpg",
+      "images/4.jpg",
+      "images/5.jpg",
+      "images/6.jpg",
+      "images/7.jpg",
+      "images/8.jpg",
+      "images/9.jpg",
+      "images/10.jpg",
+      "images/11.jpg",
+      "images/12.jpg",
+      "images/13.jpg",    
+    ];
+    
+    // Инициализация бесконечного слайдера
+    function initInfiniteSlider() {
+      const sliderImg = document.getElementById("sliderImage");
+      function changeImage() {
+        const randomIndex = Math.floor(Math.random() * sliderImages.length);
+        // Плавное затухание перед сменой
+        sliderImg.style.opacity = 0;
+        setTimeout(() => {
+          sliderImg.src = sliderImages[randomIndex];
+          sliderImg.style.opacity = 1;
+        }, 500);
+      }
+      changeImage();
+      setInterval(changeImage, 3000); // смена каждые 3 секунды
+    }
+  </script>
+  
+  <!-- Летающие сердечки на фоне -->
+  <script>
+    function createFlyingHearts() {
+      const numHearts = 50;
+      for (let i = 0; i < numHearts; i++) {
+        const heart = document.createElement('div');
+        heart.classList.add('flying-heart');
+        heart.textContent = ['❤','💕','💖','💘','💝'][Math.floor(Math.random() * 5)];
+        heart.style.left = Math.random() * 100 + 'vw';
+        heart.style.top = Math.random() * 100 + 'vh';
+        heart.style.animationDuration = (3 + Math.random() * 5) + 's';
+        heart.style.fontSize = (20 + Math.random() * 30) + 'px';
+        document.body.appendChild(heart);
+      }
+    }
+    createFlyingHearts();
+  </script>
+</body>
+</html>
